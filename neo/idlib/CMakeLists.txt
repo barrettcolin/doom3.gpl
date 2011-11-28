@@ -1,126 +1,13 @@
 # idlib static library
 ADD_DEFINITIONS(-D__IDLIB__)
 
-SET(ID_SRCS
-    BV/Bounds.cpp
-    BV/Box.cpp
-    BV/Frustum.cpp
-    BV/Sphere.cpp
-    Containers/HashIndex.cpp
-    Geometry/DrawVert.cpp
-    Geometry/JointTransform.cpp
-    Geometry/Surface.cpp
-    Geometry/Surface_Patch.cpp
-    Geometry/Surface_Polytope.cpp
-    Geometry/Surface_SweptSpline.cpp
-    Geometry/TraceModel.cpp
-    Geometry/Winding.cpp
-    Geometry/Winding2D.cpp
-    Hashing/CRC32.cpp
-    Hashing/MD4.cpp
-    Hashing/MD5.cpp
-    Math/Angles.cpp
-    Math/Complex.cpp
-    Math/Lcp.cpp
-    Math/Math.cpp
-    Math/Matrix.cpp
-    Math/Ode.cpp
-    Math/Plane.cpp
-    Math/Pluecker.cpp
-    Math/Polynomial.cpp
-    Math/Quat.cpp
-    Math/Rotation.cpp
-    Math/Simd.cpp
-    Math/Simd_3DNow.cpp
-    Math/Simd_Generic.cpp
-    Math/Simd_MMX.cpp
-    Math/Simd_SSE.cpp
-    Math/Simd_SSE2.cpp
-    Math/Simd_SSE3.cpp
-    Math/Vector.cpp
-    Base64.cpp
-    BitMsg.cpp
-    CmdArgs.cpp
-    Dict.cpp
-    Heap.cpp
-    LangDict.cpp
-    Lexer.cpp
-    Lib.cpp
-    MapFile.cpp
-    Parser.cpp
-    precompiled.cpp
-    Str.cpp
-    Timer.cpp
-    Token.cpp)
+FILE(GLOB_RECURSE ID_SRCS *.cpp)
+FILE(GLOB_RECURSE ID_INCS *.h)
 
-SET(ID_INCS
-    BV/Bounds.h
-    BV/Box.h
-    BV/Frustum.h
-    BV/Sphere.h
-    Containers/BinSearch.h
-    Containers/BTree.h
-    Containers/HashIndex.h
-    Containers/HashTable.h
-    Containers/Hierarchy.h
-    Containers/LinkList.h
-    Containers/List.h
-    Containers/PlaneSet.h
-    Containers/Queue.h
-    Containers/Stack.h
-    Containers/StaticList.h
-    Containers/StrList.h
-    Containers/StrPool.h
-    Containers/VectorSet.h
-    Geometry/DrawVert.h
-    Geometry/JointTransform.h
-    Geometry/Surface.h
-    Geometry/Surface_Patch.h
-    Geometry/Surface_Polytope.h
-    Geometry/Surface_SweptSpline.h
-    Geometry/TraceModel.h
-    Geometry/Winding.h
-    Geometry/Winding2D.h
-    Hashing/CRC32.h
-    Hashing/MD4.h
-    Hashing/MD5.h
-    Math/Angles.h
-    Math/Complex.h
-    Math/Curve.h
-    Math/Extrapolate.h
-    Math/Interpolate.h
-    Math/Lcp.h
-    Math/Math.h
-    Math/Matrix.h
-    Math/Ode.h
-    Math/Plane.h
-    Math/Pluecker.h
-    Math/Polynomial.h
-    Math/Quat.h
-    Math/Random.h
-    Math/Rotation.h
-    Math/Simd.h
-    Math/Simd_3DNow.h
-    Math/Simd_Generic.h
-    Math/Simd_MMX.h
-    Math/Simd_SSE.h
-    Math/Simd_SSE2.h
-    Math/Simd_SSE3.h
-    Math/Vector.h
-    Base64.h
-    BitMsg.h
-    CmdArgs.h
-    Dict.h
-    Heap.h
-    LangDict.h
-    Lexer.h
-    Lib.h
-    MapFile.h
-    Parser.h
-    precompiled.h
-    Str.h
-    Timer.h
-    Token.h)
+IF(MSVC)
+    LIST(REMOVE_ITEM ID_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/bv/Frustum_gcc.cpp)
+    LIST(REMOVE_ITEM ID_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/math/Simd_AltiVec.cpp)
+ENDIF(MSVC)
 
 ADD_LIBRARY(idlib ${ID_SRCS} ${ID_INCS})
-INCLUDE(../PCH.cmake)
+INCLUDE(../../PCH.cmake)
