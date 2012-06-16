@@ -42,7 +42,11 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef _D3SDK
 #ifndef GAME_DLL
 
+#if (CB_VISTA_7_8)
+#	define WINVER 0x0600
+#else
 #define WINVER				0x501
+#endif
 
 #if 0
 // Dedicated server hits unresolved when trying to link this way now. Likely because of the 2010/Win7 transition? - TTimo

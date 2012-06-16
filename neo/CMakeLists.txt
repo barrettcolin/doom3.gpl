@@ -1,4 +1,4 @@
-ADD_DEFINITIONS(-D__DOOM_DLL__)
+add_definitions(-D__DOOM_DLL__ -DCB_VISTA_7_8=1)
 
 SET(DOOM3_SRCS
     # includes
@@ -1083,4 +1083,4 @@ FIND_LIBRARY(EAXGUID_LIBRARY eaxguid ${CMAKE_SOURCE_DIR}/neo/openal/lib)
 
 ADD_EXECUTABLE(Doom3 WIN32 ${DOOM3_SRCS})
 ADD_DEPENDENCIES(Doom3 idlib curl)
-TARGET_LINK_LIBRARIES(Doom3 idlib curl ${EAXGUID_LIBRARY} glu32 opengl32 dinput8 dsound dxguid dxerr8 winmm Iphlpapi dbghelp)
+TARGET_LINK_LIBRARIES(Doom3 idlib curl ${EAXGUID_LIBRARY} glu32 opengl32 dinput8 dsound dxguid winmm Iphlpapi dbghelp)
