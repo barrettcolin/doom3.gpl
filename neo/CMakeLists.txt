@@ -512,6 +512,7 @@ SET(DOOM3_SRCS
     sys/win32/win_qgl.cpp
     sys/win32/win_shared.cpp
     sys/win32/win_snd.cpp
+    sys/win32/win_snd_dsound.cpp
     sys/win32/win_syscon.cpp
     sys/win32/win_taskkeyhook.cpp
     sys/win32/win_wndproc.cpp
