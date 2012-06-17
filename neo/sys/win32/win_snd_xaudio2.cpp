@@ -27,7 +27,9 @@ namespace
         void WaitBuffer(IXAudio2SourceVoice *voice)
         {
             XAUDIO2_VOICE_STATE state;
-            while(voice->GetState(&state), state.BuffersQueued >= idAudioHardwareXAudio2Settings::kNumBuffers)
+            voice->GetState(&state);
+
+            if(state.BuffersQueued >= idAudioHardwareXAudio2Settings::kNumBuffers)
             {
                 ::WaitForSingleObject(m_BufferEvent, INFINITE);
             }
@@ -88,7 +90,7 @@ bool idAudioHardwareXAudio2::Initialize()
 bool idAudioHardwareXAudio2::Flush()
 {
     // Contrary to idAudioHardware::Flush, this will block until a buffer is available
-    s_BufferCallback.WaitBuffer(m_SourceVoice);
+    //s_BufferCallback.WaitBuffer(m_SourceVoice);
     return true;
 }
 

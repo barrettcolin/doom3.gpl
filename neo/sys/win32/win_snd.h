@@ -7,6 +7,7 @@ namespace idAudioHardwareXAudio2Settings
 {
     enum
     {
+        // TODO ensure this doesn't go under 3
         kNumBuffers = 3
     };
 }
@@ -15,6 +16,7 @@ class idAudioHardwareXAudio2 : public idAudioHardware
 {
 public:
     idAudioHardwareXAudio2();
+
     ~idAudioHardwareXAudio2();
 
     bool Initialize();
