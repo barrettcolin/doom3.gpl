@@ -3,17 +3,11 @@
 
 #include <xaudio2.h>
 
-namespace idAudioHardwareXAudio2Settings
-{
-    enum
-    {
-        // TODO ensure this doesn't go under 3
-        kNumBuffers = 3
-    };
-}
-
 class idAudioHardwareXAudio2 : public idAudioHardware
 {
+public:
+    static int const kNumBuffers = 3;
+
 public:
     idAudioHardwareXAudio2();
 
@@ -43,9 +37,9 @@ public:
     short *GetMixBuffer();
 
 private:
-    int TryCreate();
+    int Init();
 
-    void Destroy();
+    void Shutdown();
 
 private:
     IXAudio2 *m_XAudio2;
@@ -53,10 +47,10 @@ private:
     IXAudio2MasteringVoice *m_MasteringVoice;
     int m_NumSpeakers;
 
-    int m_CurrentMixBuffer;
-    BYTE *m_MixBuffers[idAudioHardwareXAudio2Settings::kNumBuffers];
-
     IXAudio2SourceVoice *m_SourceVoice;
+
+    int m_CurrentMixBuffer;
+    BYTE *m_MixBuffers[kNumBuffers];
 };
 
 #endif

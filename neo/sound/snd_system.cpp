@@ -765,10 +765,6 @@ int idSoundSystemLocal::AsyncUpdateWrite( int inTime ) {
 		return 0;
 	}
 
-	if ( nextWriteBlock != dwCurrentBlock ) {
-		Sys_Printf( "missed %d sound updates\n", dwCurrentBlock - nextWriteBlock );
-	}
-
 	int sampleTime = dwCurrentBlock * MIXBUFFER_SAMPLES;	
 	int numSpeakers = snd_audio_hw->GetNumberOfSpeakers();
 

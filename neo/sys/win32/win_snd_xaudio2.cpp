@@ -5,17 +5,17 @@
 #include "win_local.h"
 #include "win_snd.h"
 
-#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
-
 namespace
 {
     class BufferCallback : public IXAudio2VoiceCallback
     {
         HANDLE m_BufferEvent;
+        int m_NumWaits;
 
     public:
         BufferCallback()
-            : m_BufferEvent(::CreateEvent(NULL, FALSE, FALSE, NULL))
+            : m_BufferEvent(::CreateEvent(NULL, FALSE, FALSE, NULL)),
+            m_NumWaits(0)
         {
         }
 
@@ -24,13 +24,17 @@ namespace
             ::CloseHandle(m_BufferEvent);
         }
 
+        int GetNumWaits() const
+        {
+            return m_NumWaits;
+        }
+
         void WaitBuffer(IXAudio2SourceVoice *voice)
         {
             XAUDIO2_VOICE_STATE state;
-            voice->GetState(&state);
-
-            if(state.BuffersQueued >= idAudioHardwareXAudio2Settings::kNumBuffers)
+            while(voice->GetState(&state), state.BuffersQueued >= idAudioHardwareXAudio2::kNumBuffers)
             {
+                m_NumWaits++;
                 ::WaitForSingleObject(m_BufferEvent, INFINITE);
             }
         }
@@ -77,20 +81,21 @@ idAudioHardwareXAudio2::idAudioHardwareXAudio2()
 
 idAudioHardwareXAudio2::~idAudioHardwareXAudio2()
 {
-    Destroy();
+    Sys_Printf("XAudio2 waited %d times", s_BufferCallback.GetNumWaits());
+    Shutdown();
 }
 
 bool idAudioHardwareXAudio2::Initialize()
 {
-    Destroy();
+    Shutdown();
 
-    return (1 == TryCreate() ? true : false);
+    return (1 == Init() ? true : false);
 }
 
 bool idAudioHardwareXAudio2::Flush()
 {
     // Contrary to idAudioHardware::Flush, this will block until a buffer is available
-    //s_BufferCallback.WaitBuffer(m_SourceVoice);
+    s_BufferCallback.WaitBuffer(m_SourceVoice);
     return true;
 }
 
@@ -103,7 +108,7 @@ void idAudioHardwareXAudio2::Write(bool flush)
     }
     m_SourceVoice->SubmitSourceBuffer(&buf);
 
-    m_CurrentMixBuffer = (m_CurrentMixBuffer + 1) % idAudioHardwareXAudio2Settings::kNumBuffers;
+    m_CurrentMixBuffer = (m_CurrentMixBuffer + 1) % kNumBuffers;
 }
 
 short *idAudioHardwareXAudio2::GetMixBuffer()
@@ -111,7 +116,7 @@ short *idAudioHardwareXAudio2::GetMixBuffer()
     return reinterpret_cast<short *>(m_MixBuffers[m_CurrentMixBuffer]);
 }
 
-int idAudioHardwareXAudio2::TryCreate()
+int idAudioHardwareXAudio2::Init()
 {
     for(;;)
     {
@@ -143,7 +148,7 @@ int idAudioHardwareXAudio2::TryCreate()
             break;
 
         int const buffer_size = GetMixBufferSize();
-        for(int i = 0; i < idAudioHardwareXAudio2Settings::kNumBuffers; i++)
+        for(int i = 0; i < kNumBuffers; i++)
         {
             m_MixBuffers[i] = static_cast<BYTE *>(Mem_Alloc(buffer_size));
         }
@@ -151,18 +156,18 @@ int idAudioHardwareXAudio2::TryCreate()
         return 1;
     }
 
-    Destroy();
+    Shutdown();
     return 0;
 }
 
-void idAudioHardwareXAudio2::Destroy()
+void idAudioHardwareXAudio2::Shutdown()
 {
     if(m_SourceVoice)
     {
         m_SourceVoice->Stop(0);
 
         s_BufferCallback.WaitAllBuffers(m_SourceVoice);
-        for(int i = 0; i < idAudioHardwareXAudio2Settings::kNumBuffers; i++)
+        for(int i = 0; i < kNumBuffers; i++)
         {
             Mem_Free(m_MixBuffers[i]);
             m_MixBuffers[i] = NULL;
@@ -178,5 +183,9 @@ void idAudioHardwareXAudio2::Destroy()
         m_MasteringVoice = NULL;
     }
 
-    SAFE_RELEASE(m_XAudio2);
+    if(m_XAudio2)
+    {
+        m_XAudio2->Release();
+        m_XAudio2 = NULL;
+    }
 }
