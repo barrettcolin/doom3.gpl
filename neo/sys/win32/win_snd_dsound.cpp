@@ -36,6 +36,7 @@ If you have questions concerning this license or the applicable additional terms
 #include <ksmedia.h>
 #include "../../sound/snd_local.h"
 #include "win_local.h"
+#include "win_snd.h"
 
 #define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
@@ -104,7 +105,15 @@ private:
 	int						blockAlign;		// channels * bits per sample / 8: sound frame size
 };
 
-idAudioHardware *idAudioHardware::Alloc() { return new idAudioHardwareWIN32; }
+idAudioHardware *idAudioHardware::Alloc()
+{
+#if (CB_USE_XAUDIO2)
+    return new idAudioHardwareXAudio2;
+#else
+    return new idAudioHardwareWIN32;
+#endif
+}
+
 idAudioHardware::~idAudioHardware() {}
 
 /*

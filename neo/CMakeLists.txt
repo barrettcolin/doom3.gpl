@@ -1,6 +1,7 @@
-add_definitions(-D__DOOM_DLL__ -DCB_VISTA_7_8=1)
+include_directories($ENV{DXSDK_DIR}/Include)
+add_definitions(-D__DOOM_DLL__ -DCB_VISTA_7_8=1 -DCB_USE_XAUDIO2=1)
 
-SET(DOOM3_SRCS
+SET(NEO_SRCS
     # includes
     cm/CollisionModel.h
     cm/CollisionModel_local.h
@@ -122,6 +123,7 @@ SET(DOOM3_SRCS
     sys/sys_local.h
     sys/sys_public.h
     sys/win32/win_local.h
+	sys/win32/win_snd.h
     sys/win32/rc/AFEditor_resource.h
     sys/win32/rc/Common_resource.h
     sys/win32/rc/CreateResourceIDs.h
@@ -513,6 +515,7 @@ SET(DOOM3_SRCS
     sys/win32/win_shared.cpp
     sys/win32/win_snd.cpp
     sys/win32/win_snd_dsound.cpp
+    sys/win32/win_snd_xaudio2.cpp
     sys/win32/win_syscon.cpp
     sys/win32/win_taskkeyhook.cpp
     sys/win32/win_wndproc.cpp
@@ -1082,6 +1085,6 @@ ENDIF(MSVC)
 
 FIND_LIBRARY(EAXGUID_LIBRARY eaxguid ${CMAKE_SOURCE_DIR}/neo/openal/lib)
 
-ADD_EXECUTABLE(Doom3 WIN32 ${DOOM3_SRCS})
-ADD_DEPENDENCIES(Doom3 idlib curl)
-TARGET_LINK_LIBRARIES(Doom3 idlib curl ${EAXGUID_LIBRARY} glu32 opengl32 dinput8 dsound dxguid winmm Iphlpapi dbghelp)
+ADD_EXECUTABLE(neo WIN32 ${NEO_SRCS})
+ADD_DEPENDENCIES(neo idlib curl gamex86)
+TARGET_LINK_LIBRARIES(neo idlib curl ${EAXGUID_LIBRARY} glu32 opengl32 dinput8 dsound dxguid winmm Iphlpapi dbghelp)
