@@ -39,15 +39,6 @@ namespace
             }
         }
 
-        void WaitAllBuffers(IXAudio2SourceVoice *voice)
-        {
-            XAUDIO2_VOICE_STATE state;
-            while(voice->GetState(&state), state.BuffersQueued > 0)
-            {
-                ::WaitForSingleObjectEx(m_BufferEvent, INFINITE, TRUE);
-            }
-        }
-
     protected:
         STDMETHOD_(void, OnVoiceProcessingPassStart)(UINT32) {}
 
@@ -164,17 +155,15 @@ void idAudioHardwareXAudio2::Shutdown()
 {
     if(m_SourceVoice)
     {
-        m_SourceVoice->Stop(0);
+        m_SourceVoice->FlushSourceBuffers();
+        m_SourceVoice->DestroyVoice();
+        m_SourceVoice = NULL;
 
-        s_BufferCallback.WaitAllBuffers(m_SourceVoice);
         for(int i = 0; i < kNumBuffers; i++)
         {
             Mem_Free(m_MixBuffers[i]);
             m_MixBuffers[i] = NULL;
         }
-
-        m_SourceVoice->DestroyVoice();
-        m_SourceVoice = NULL;
     }
 
     if(m_MasteringVoice)
