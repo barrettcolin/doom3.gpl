@@ -5,61 +5,6 @@
 #include "win_local.h"
 #include "win_snd.h"
 
-namespace
-{
-    class BufferCallback : public IXAudio2VoiceCallback
-    {
-        HANDLE m_BufferEvent;
-        int m_NumWaits;
-
-    public:
-        BufferCallback()
-            : m_BufferEvent(::CreateEvent(NULL, FALSE, FALSE, NULL)),
-            m_NumWaits(0)
-        {
-        }
-
-        ~BufferCallback()
-        {
-            ::CloseHandle(m_BufferEvent);
-        }
-
-        int GetNumWaits() const
-        {
-            return m_NumWaits;
-        }
-
-        void WaitBuffer(IXAudio2SourceVoice *voice)
-        {
-            XAUDIO2_VOICE_STATE state;
-            while(voice->GetState(&state), state.BuffersQueued >= idAudioHardwareXAudio2::kNumBuffers)
-            {
-                m_NumWaits++;
-                ::WaitForSingleObject(m_BufferEvent, INFINITE);
-            }
-        }
-
-    protected:
-        STDMETHOD_(void, OnVoiceProcessingPassStart)(UINT32) {}
-
-        STDMETHOD_(void, OnVoiceProcessingPassEnd)() {}
-
-        STDMETHOD_(void, OnStreamEnd)() {}
-
-        STDMETHOD_(void, OnBufferStart)(void*) {}
-
-        STDMETHOD_(void, OnBufferEnd)(void*)
-        {
-            ::SetEvent(m_BufferEvent);
-        }
-
-        STDMETHOD_(void, OnLoopEnd)(void*) {}
-
-        STDMETHOD_(void, OnVoiceError)(void*, HRESULT) {}
-
-    } s_BufferCallback;
-}
-
 idAudioHardwareXAudio2::idAudioHardwareXAudio2() 
     : m_XAudio2(NULL),
     m_MasteringVoice(NULL),
@@ -72,7 +17,6 @@ idAudioHardwareXAudio2::idAudioHardwareXAudio2()
 
 idAudioHardwareXAudio2::~idAudioHardwareXAudio2()
 {
-    Sys_Printf("XAudio2 waited %d times", s_BufferCallback.GetNumWaits());
     Shutdown();
 }
 
@@ -85,8 +29,6 @@ bool idAudioHardwareXAudio2::Initialize()
 
 bool idAudioHardwareXAudio2::Flush()
 {
-    // Contrary to idAudioHardware::Flush, this will block until a buffer is available
-    s_BufferCallback.WaitBuffer(m_SourceVoice);
     return true;
 }
 
@@ -132,7 +74,7 @@ int idAudioHardwareXAudio2::Init()
             wave_format.nAvgBytesPerSec = wave_format.nSamplesPerSec * wave_format.nBlockAlign;
         }
 
-        if(FAILED(m_XAudio2->CreateSourceVoice(&m_SourceVoice, &wave_format, 0, 2.0f, &s_BufferCallback)))
+        if(FAILED(m_XAudio2->CreateSourceVoice(&m_SourceVoice, &wave_format)))
             break;
 
         if(FAILED(m_SourceVoice->Start(0)))
